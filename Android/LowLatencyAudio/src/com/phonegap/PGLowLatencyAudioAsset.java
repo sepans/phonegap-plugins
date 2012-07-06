@@ -16,12 +16,15 @@ package com.phonegap;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.net.Uri;
 
 public class PGLowLatencyAudioAsset {
 
 	private ArrayList<PGPolyphonicVoice> voices;
 	private int playIndex = 0;
+	private float volume = 1;
 	
 	public PGLowLatencyAudioAsset(AssetFileDescriptor afd, int numVoices) throws IOException
 	{
@@ -37,6 +40,19 @@ public class PGLowLatencyAudioAsset {
 		}
 	}
 	
+	public PGLowLatencyAudioAsset(Context context, Uri uri, int numVoices) throws IOException
+	{
+		voices = new ArrayList<PGPolyphonicVoice>();
+		
+		if ( numVoices < 0 )
+			numVoices = 0;
+		
+		for ( int x=0; x<numVoices; x++) 
+		{
+			PGPolyphonicVoice voice = new PGPolyphonicVoice(context, uri);
+			voices.add( voice );
+		}
+	}
 	public void play() throws IOException
 	{
 		PGPolyphonicVoice voice = voices.get(playIndex);
@@ -72,5 +88,20 @@ public class PGLowLatencyAudioAsset {
 		}
 		voices.removeAll(voices);
 	}
+
+	public float getVolume() {
+		return volume;
+	}
+
+	public void setVolume(float volume) {
+		this.volume = volume;
+		for ( int x=0; x<voices.size(); x++) 
+		{
+			PGPolyphonicVoice voice = voices.get(x);
+			voice.changeVolume(volume);
+		}
+		
+	}
+	
 	
 }

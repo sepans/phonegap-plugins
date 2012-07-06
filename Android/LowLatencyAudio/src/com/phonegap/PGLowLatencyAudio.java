@@ -20,11 +20,12 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.util.Log;
 
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PluginResult;
-import com.phonegap.api.PluginResult.Status;
+import org.apache.cordova.api.PluginResult.Status;
 
 /**
  * @author triceam
@@ -38,6 +39,7 @@ public class PGLowLatencyAudio extends Plugin {
 	public static final String PRELOAD_FX="preloadFX";
 	public static final String PRELOAD_AUDIO="preloadAudio";
 	public static final String PLAY="play";
+	public static final String VOLUME = "volume";
 	public static final String STOP="stop";
 	public static final String LOOP="loop";
 	public static final String UNLOAD="unload";
@@ -95,13 +97,26 @@ public class PGLowLatencyAudio extends Plugin {
 						voices = data.getInt(2);
 					}
 					
-					String fullPath = "www/".concat( assetPath );
 					
-					AssetManager am = ctx.getResources().getAssets(); 
-					AssetFileDescriptor afd = am.openFd(fullPath);
+					if(assetPath.startsWith("http://")) {
+
+						Uri uri = Uri.parse(assetPath);
+						PGLowLatencyAudioAsset asset = new PGLowLatencyAudioAsset( ctx.getBaseContext(),uri , voices);
+						assetMap.put( audioID , asset );
+					}
+					else
+					{
+						String fullPath = "www/".concat( assetPath );
+						
+						AssetManager am = ctx.getResources().getAssets(); 
+						AssetFileDescriptor afd = am.openFd(fullPath);
+						PGLowLatencyAudioAsset asset = new PGLowLatencyAudioAsset( afd, voices );
+						assetMap.put( audioID , asset );
+						
+						
+						
+					}
 					
-					PGLowLatencyAudioAsset asset = new PGLowLatencyAudioAsset( afd, voices );
-					assetMap.put( audioID , asset );
 				}
 				else 
 				{
@@ -161,7 +176,24 @@ public class PGLowLatencyAudio extends Plugin {
 					result = new PluginResult(Status.ERROR, ERROR_NO_AUDIOID);
 				}
 			}
-			
+			if ( VOLUME.equals( action ) ) 
+			{
+				if ( assetMap.containsKey(audioID) )
+				{
+					PGLowLatencyAudioAsset asset = assetMap.get( audioID );
+					double volume = data.getDouble(1);
+					asset.setVolume((float) volume);
+				}
+				else if ( soundMap.containsKey(audioID) ){
+					//streams unloaded and stopped above
+					//int assetIntID = soundMap.get( audioID );
+				}
+				else 
+				{
+					result = new PluginResult(Status.ERROR, ERROR_NO_AUDIOID);
+				}
+				
+			}		
 			if ( UNLOAD.equals( action ) ) 
 			{
 				if ( assetMap.containsKey(audioID) )

@@ -22,6 +22,10 @@ loop: function (id, success, fail) {
     
 unload: function (id, success, fail) {
     return PhoneGap.exec(success, fail, "PGLowLatencyAudio", "unload", [id]);
+},
+
+volume: function (id, volume, success, fail) {
+    return PhoneGap.exec(success, fail, "PGLowLatencyAudio", "volume", [id,volume]);
 }
     
     

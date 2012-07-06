@@ -15,11 +15,13 @@ package com.phonegap;
 
 import java.io.IOException;
 
+import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
+import android.net.Uri;
 
 public class PGPolyphonicVoice implements OnPreparedListener, OnCompletionListener {
 
@@ -40,6 +42,17 @@ public class PGPolyphonicVoice implements OnPreparedListener, OnCompletionListen
 		mp.setDataSource( afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
 		mp.setAudioStreamType(AudioManager.STREAM_MUSIC);  
 		mp.prepare();
+		
+		
+	}
+	
+	public PGPolyphonicVoice(  Context context,Uri uri )  throws IOException
+	{
+		state = INVALID;
+		mp = new MediaPlayer();
+		mp.setDataSource(context, uri);
+		mp.prepare();
+		
 	}
 	
 	public void play() throws IOException
@@ -112,6 +125,9 @@ public class PGPolyphonicVoice implements OnPreparedListener, OnCompletionListen
 			state = PREPARED;
 			mp.seekTo(0);
 		}
+	}
+	public void changeVolume(float volume) {
+		mp.setVolume(volume, volume);
 	}
 	
 	public void onCompletion(MediaPlayer mPlayer)
